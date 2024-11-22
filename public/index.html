@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stream Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Live Streaming Control Panel</h1>
+
+    <h3>Stream Settings</h3>
+    <form id="settings-form" enctype="multipart/form-data">
+        <label for="rtmpUrl">RTMP URL:</label><br>
+        <input type="text" id="rtmpUrl" name="rtmpUrl" required><br><br>
+        
+        <label for="rtmpKey">RTMP Key:</label><br>
+        <input type="text" id="rtmpKey" name="rtmpKey" required><br><br>
+
+        <label for="audioUrl">Audio URL:</label><br>
+        <input type="text" id="audioUrl" name="audioUrl" required><br><br>
+
+        <label for="videoFile">Upload Video (MP4 only):</label><br>
+        <input type="file" id="videoFile" name="videoFile" accept="video/mp4" required><br><br>
+
+        <button type="submit">Update Settings</button>
+    </form>
+
+    <div class="controls">
+        <button class="start" onclick="startStream()">Start Stream</button>
+        <button class="stop" onclick="stopStream()">Stop Stream</button>
+    </div>
+
+    <div class="alert" id="statusMessage"></div>
+
+    <script>
+        // Handle stream start
+        async function startStream() {
+            const response = await fetch('/start', { method: 'POST' });
+            const message = await response.text();
+            showStatusMessage(message, false);
+        }
+
+        // Handle stream stop
+        async function stopStream() {
+            const response = await fetch('/stop', { method: 'POST' });
+            const message = await response.text();
+            showStatusMessage(message, false);
+        }
+
+        // Handle form submit for updating settings
+        document.getElementById('settings-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+
+            const response = await fetch('/update-settings', {
+                method: 'POST',
+                body: formData // Sends the video file along with form data
+            });
+
+            const message = await response.text();
+            showStatusMessage(message, true);
+        });
+
+        // Display status messages to user
+        function showStatusMessage(message, isError) {
+            const statusMessageElement = document.getElementById('statusMessage');
+            statusMessageElement.innerText = message;
+            statusMessageElement.classList.remove('error');
+            if (isError) {
+                statusMessageElement.classList.add('error');
+            }
+            statusMessageElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
